@@ -484,8 +484,6 @@ async def spellbook(ctx):
             out+='\n'+str(p.spell_points)+' Spell Point(s) per encounter```'
     await ctx.send(out)
 
-#need to add !sell function
-
 @dm.command()
 async def buy(ctx, i):
     g=str(ctx.guild)
