@@ -6,7 +6,7 @@ import time
 import threading
 import asyncio
 
-token='TOKEN-HERE'
+token='NzE0NjQxMDc1ODU5NjE5OTE5.GygSRp.XGIrpezp7Tar0A8B1bCef7VL6cJxakD5BRAiMA'
 alive=True
 
 index={} #holds guilds and related objects
@@ -200,7 +200,10 @@ async def show_stats(p):
     else:
         return '***ERROR!***'
 
-dm=commands.Bot(command_prefix='$', case_insensitive=True)
+intents=discord.Intents.default()
+intents.message_content=True
+dm=commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
+
 @dm.event
 async def on_ready():
     print('Dungeon Master is ready!')
@@ -399,7 +402,7 @@ async def action(ctx, *args):
             p.turn-=1
             await ctx.send('**Failed attempt to flee!**')
     else:
-        await ctx.send('**Please choose a valid action!**\n```\n!action attack\n!action cast [spell number]\n!action use [item number]\n!action flee```')
+        await ctx.send('**Please choose a valid action!**\n```\n$action attack\n$action cast [spell number]\n$action use [item number]\n$action flee```')
     #win
     if p.mon.hp < 1:
         xp_reward=int((p.lvl+1)/2)*dice(4, 4)
@@ -599,7 +602,7 @@ async def logout(ctx):
     alive=False
     print('Waiting to logout...')
     await ctx.send('*Saving and logging out...*')
-    await dm.logout()
+    await dm.close()
 def save_all():
     f=open('dm.sv', 'wb')
     pickle.dump(index, f)
