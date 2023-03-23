@@ -6,7 +6,7 @@ import time
 import threading
 import asyncio
 
-token='NzE0NjQxMDc1ODU5NjE5OTE5.GygSRp.XGIrpezp7Tar0A8B1bCef7VL6cJxakD5BRAiMA'
+token='TOKEN-HERE'
 alive=True
 
 index={} #holds guilds and related objects
