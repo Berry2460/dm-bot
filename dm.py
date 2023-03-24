@@ -6,10 +6,8 @@ import time
 import threading
 import asyncio
 
-token='TOKEN-HERE'
+token='NzE0NjQxMDc1ODU5NjE5OTE5.G8jPQN.ZIiP2kapayCpXe2PJsVB4MVQ40eaBHgIHAbiN0'
 alive=True
-
-index={} #holds guilds and related objects
 
 #name, hp, ac, sides, times, hit bonus
 monster_index=((('Goblin', 9, 10, 4, 1, 0), ('Grey Wolf', 8, 10, 4, 1, 1), ('Zombie', 12, 8, 6, 1, -1), ('Kobold', 7, 10, 4, 1, 0), ('Bandit', 8, 11, 6, 1, 1), ('Giant Spider', 5, 12, 4, 1, 2)), #lvl 1-2
@@ -43,20 +41,21 @@ def dice(side=6, times=1):
     return total
 class Game:
     def __init__(self):
-        self.players=[]
+        self.players={}
     def find_player(self, name):
-        for p in self.players:
-            if p.name == name:
-                return p
-        return False
+        try:
+            p=self.players[name]
+            return p
+        except:
+            return False
     def add_player(self, name):
         p=self.Player(name)
-        self.players.append(p)
+        self.players[name]=p
         return p
-    def dead(self, p, g):
+    def dead(self, p):
         try:
-            print(p.name+' on '+g+' has died!')
-            self.players.remove(p)
+            print(p.name+' has died!')
+            del self.players[p.name]
         except:
             pass
     class Player:
@@ -200,6 +199,7 @@ async def show_stats(p):
     else:
         return '***ERROR!***'
 
+main=Game()
 intents=discord.Intents.default()
 intents.message_content=True
 dm=commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
@@ -207,24 +207,10 @@ dm=commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
 @dm.event
 async def on_ready():
     print('Dungeon Master is ready!')
-@dm.event
-async def on_guild_join(guild):
-    g=str(guild)
-    print('Joined '+g)
-    index.update({g:Game()})
-@dm.event
-async def on_message(msg):
-    g=str(msg.guild)
-    if not g in index:
-        index.update({g:Game()})
-        print('Fixed game for '+g)
-    await dm.process_commands(msg)
 
 @dm.command()
 async def equip(ctx, equip):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     e=int(equip)
     if p.inv[e]:
@@ -242,23 +228,19 @@ async def equip(ctx, equip):
 
 @dm.command()
 async def newchar(ctx):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     test=main.find_player(a)
     if test:
         await ctx.send('You already have a character!')
         return
     else:
         p=main.add_player(a)
-        print('Created Character for', a, 'on', g)
+        print('Created Character for', a)
         out=await show_stats(p)
         await ctx.send('Created your Character!\n'+out)
 @dm.command()
 async def action(ctx, *args):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     if not p:
         await ctx.send('You do not have a character!')
@@ -430,14 +412,12 @@ async def action(ctx, *args):
         p.turn=p.turns
     #dead
     if p.hp < 1:
-        main.dead(p, g)
+        main.dead(p)
         await ctx.send('***You have been slain!***\n*You will need to create a new character...*')
 @dm.command()
 async def encounter(ctx):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
-    p=main.find_player(str(ctx.message.author))
+    p=main.find_player(a)
     if not p:
         await ctx.send('You do not have a character!')
         return
@@ -453,9 +433,7 @@ async def encounter(ctx):
         await ctx.send(out)
 @dm.command()
 async def stats(ctx):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     out='You do not have a character!'
     if p:
@@ -464,9 +442,7 @@ async def stats(ctx):
 
 @dm.command()
 async def spellbook(ctx):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     out='You do not have a character!'
     if p:
@@ -494,9 +470,7 @@ async def spellbook(ctx):
 
 @dm.command()
 async def buy(ctx, i):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     if p:
         if p.battle:
@@ -519,7 +493,6 @@ async def buy(ctx, i):
 async def sell(ctx, i):
     g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     p=main.find_player(a)
     i=int(i)
     if p:
@@ -561,9 +534,7 @@ async def shop(ctx):
 
 @dm.command()
 async def inv(ctx):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
-    main=index[g]
     out='You do not have a character!'
     p=main.find_player(a)
     if p:
@@ -605,7 +576,7 @@ async def logout(ctx):
     await dm.close()
 def save_all():
     f=open('dm.sv', 'wb')
-    pickle.dump(index, f)
+    pickle.dump(main, f)
     f.close()
 def save_loop():
     mins=10
@@ -619,12 +590,13 @@ def save_loop():
                 time.sleep(mins/factor)
         save_all()
         print('\nSaved.\n')
+
 if __name__ == '__main__':
     t=threading.Thread(target=save_loop)
     t.start()
     try:
         f=open('dm.sv', 'rb')
-        index=pickle.load(f)
+        main=pickle.load(f)
         print('Loaded save file!')
     except:
         print('No save file found.')
