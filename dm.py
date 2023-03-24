@@ -304,7 +304,7 @@ async def action(ctx, *args):
         await ctx.send('You are not in combat!')
         return
     #basic attack
-    if args[0] == 'attack':
+    if p.turn > 0 and args[0] == 'attack':
         p.turn-=1
         damage=0
         for i in range(p.attacks):
@@ -322,7 +322,7 @@ async def action(ctx, *args):
                     await ctx.send('You **Missed!**')
                 p.mon.hp-=damage
     #spells
-    elif args[0] == 'cast':
+    elif p.turn > 0 and args[0] == 'cast':
         spell=int(args[1])
         if spell >= len(p.spells):
             await ctx.send('***Invalid Spell!***')
@@ -358,7 +358,7 @@ async def action(ctx, *args):
             else:
                 await ctx.send('**You already have a similar spell active!**')
     #use
-    elif args[0] == 'use':
+    elif p.turn > 0 and args[0] == 'use':
         item=int(args[1])
         if item >= len(p.inv):
             await ctx.send('***Invalid Item!***')
@@ -410,7 +410,7 @@ async def action(ctx, *args):
                     p.remove_item(item)
                 else:
                     await ctx.send('**You already have a similar spell active!**')
-    elif args[0] == 'flee':
+    elif p.turn > 0 and args[0] == 'flee':
         flee=random.choice([False, False, True])
         if flee:
             p.battle=False
