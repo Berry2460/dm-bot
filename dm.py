@@ -567,14 +567,6 @@ async def shop(ctx):
         out+=' '+str(item[4])+'g\n'
     out+='```'
     await ctx.send(out)
-
-@dm.command()
-async def fixallspells(ctx):
-    a=str(ctx.message.author)
-    p=main.find_player(a)
-    updateAllSpells(p)
-    await ctx.send('well, ok then...')
-
 @dm.command()
 async def inv(ctx):
     a=str(ctx.message.author)
