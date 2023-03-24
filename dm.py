@@ -9,6 +9,9 @@ import asyncio
 token='TOKEN_HERE'
 alive=True
 
+pclass_index={'warrior': 0, 'rogue': 1, 'wizard': 2}
+pclass_inverse_index={0: 'Warrior', 1: 'Rogue', 2: 'Wizard'}
+
 #name, hp, ac, sides, times, hit bonus
 monster_index=((('Goblin', 9, 10, 4, 1, 0), ('Grey Wolf', 8, 10, 4, 1, 1), ('Zombie', 12, 8, 6, 1, -1), ('Kobold', 7, 10, 4, 1, 0), ('Bandit', 8, 11, 6, 1, 1), ('Giant Spider', 5, 12, 4, 1, 2)), #lvl 1-2
                (('Orc', 14, 11, 8, 1, 2), ('Ghoul', 16, 9, 8, 1, 1), ('Dancing Sword', 9, 14, 6, 1, 2), ('Harpy', 12, 13, 4, 2, 2), ('Dire Wolf', 13, 12, 4, 2, 2), ('Bugbear', 15, 11, 4, 2, 2)), #lvl 3-4
@@ -48,8 +51,8 @@ class Game:
             return p
         except:
             return False
-    def add_player(self, name):
-        p=self.Player(name)
+    def add_player(self, name, pclass):
+        p=self.Player(name, pclass)
         self.players[name]=p
         return p
     def dead(self, p):
@@ -59,30 +62,39 @@ class Game:
         except:
             pass
     class Player:
-        def __init__(self, name):
+        def __init__(self, name, pclass):
+            self.pclass=pclass
+            self.duel=None
             self.mon=None
             self.battle=False
-            self.inv=[['Short Sword', 6, 1, 1, 50, 0], ['Cloth', 10, None, 0, 20, 0]]
+            self.inv=[['Short Sword', 6, 1, 1, 50, 0], ['Cloth', 10, None, 0, 20, 0], None, None, None, None, None, None, None, None]
+            self.invCount=2
             self.name=name
             self.xp=0
             self.xpmax=40
             self.lvl=1
-            self.str=dice(20, 1)
-            self.dex=dice(20, 1)
-            self.vit=dice(20, 1)
-            self.intel=dice(20, 1)
+            self.str=dice(8, 2)+2
+            self.dex=dice(8, 2)+2
+            self.vit=dice(8, 2)+2
+            self.intel=dice(8, 2)+2
+            if pclass == pclass_index['warrior']:
+                self.str=max(10, self.str)+2
+            elif pclass == pclass_index['rogue']:
+                self.dex=max(10, self.dex)+2
+            elif pclass == pclass_index['wizard']:
+                self.intel=max(10, self.intel)+2
             self.spells=[]
             self.spell_book=[[['Magic Missile', 4, 2, 0], ['Shield', 4, 1, 1], ['Focus', 4, 1, 3], ['Weapon Enchantment', 4, 1, 2]],
                              [['Blur', 4, 2, 1], ['Fireball', 6, 3, 0], ['ESP', 4, 2, 3], ['Fiery Blade', 4, 2, 2]],
                              [['Invisibility', 4, 3, 1], ['Chain Lightning', 6, 5, 0], ['Ethereal Weapon', 6, 2, 2], ['Clairvoynace', 4, 3, 3]]]
-            if self.intel >= 9:
+            if self.pclass == pclass_index['wizard']:
                 new=random.choice(self.spell_book[0])
                 self.spells.append(new)
                 self.spell_book[0].remove(new)
             else:
                 roll=dice(4, 1)-1
                 item=['Scroll of '+all_spells[int(self.lvl/4)][roll][0], int(self.lvl/4), roll, 3, int((self.lvl/4)+1)*55]
-                self.inv.append(item)
+                self.add_item(item)
             self.q_weap=0
             self.q_ac=1
             self.gold=dice(6, 4)*10
@@ -93,10 +105,25 @@ class Game:
             self.attacks=1 #attack moves per turn
             self.spell_points=1 #spell points per encounter
             self.apply()
+        def add_item(self, item):
+            if self.invCount < len(self.inv):
+                for i in range(len(self.inv)):
+                    if not self.inv[i]:
+                        self.inv[i]=item
+                        self.invCount+=1
+                        return True
+            else:
+                return False
+        def remove_item(self, index):
+            if index < len(self.inv) and index >= 0 and self.inv[index] != None:
+                self.inv[index]=None
+                return True
+            else:
+                return False
         def encounter(self):
             self.apply()
             select=dice(10, 1)-1
-            if select >= 6:
+            if select >= 7:
                 g=dice(6, 4)*3
                 x=dice(6, 3)*int((self.lvl+1)/2)
                 out='***Found Treasure!***\n+'+str(g)+' Gold!\n+'+str(x)+' XP!\n'
@@ -115,8 +142,8 @@ class Game:
                         item[5]=mod
                         item[4]+=mod*20
                         item[0]+=' +'+(str(mod))
-                    self.inv.append(item)
-                    out+='Found **'+item[0]+'!**'
+                    if (self.add_item(item)):
+                        out+='Found **'+item[0]+'!**'
             else:
                 self.battle=True
                 self.mon=self.Monster(int((self.lvl-1)/2), select)
@@ -139,11 +166,11 @@ class Game:
                 self.xp=0
                 return
             self.lvl+=1
-            if self.str >= 10: #strength proficent
+            if self.pclass == pclass_index['warrior']: #strength proficent
                 self.attacks=int(self.lvl/3)+1
-            if self.dex >= 12: #agility proficent
+            if self.pclass == pclass_index['rogue']: #agility proficent
                 self.turns=int(self.lvl/4)+1
-            if self.intel >= 9: #magic proficent
+            if self.pclass == pclass_index['wizard']: #magic proficent
                 self.spell_bonus=int((self.intel-10)/2)+int(self.lvl/3)
                 new=random.choice(self.spell_book[int(self.lvl/4)])
                 self.spells.append(new)
@@ -188,6 +215,7 @@ async def show_stats(p):
         out='```'
         out+=p.name
         out+='\'s Character:\nLevel: '+str(p.lvl)
+        out+='\nClass: '+pclass_inverse_index[p.pclass]
         out+='\nLife: '+str(p.hp)+'/'+str(p.hpmax)
         out+='\nArmor: '+p.inv[p.q_ac][0]+' +'+str(p.ac)
         out+='\nAttack: '+p.inv[p.q_weap][0]+' '+str(p.inv[p.q_weap][2])+'d'+str(p.inv[p.q_weap][1])+dmg_bonus+' '+hit_bonus+' To Hit x'+str(p.attacks)+atk
@@ -227,17 +255,28 @@ async def equip(ctx, equip):
         await ctx.send('***Invalid Item!***')
 
 @dm.command()
-async def newchar(ctx):
+async def newchar(ctx, pclass=None):
     a=str(ctx.message.author)
-    test=main.find_player(a)
+    #test=main.find_player(a)
+    test=False
+    bad=False
     if test:
         await ctx.send('You already have a character!')
         return
     else:
-        p=main.add_player(a)
-        print('Created Character for', a)
-        out=await show_stats(p)
-        await ctx.send('Created your Character!\n'+out)
+        try:
+            pclass=str(pclass)
+            if pclass_index[pclass] >= 0 and pclass_index[pclass] < 3:
+                p=main.add_player(a, pclass_index[pclass])
+                print('Created Character for', a)
+                out=await show_stats(p)
+                await ctx.send('Created your Character!\n'+out)
+            else:
+                bad=True
+        except:
+            bad=True
+    if bad:
+        await ctx.send('**Invalid Class!**\nValid Classes are: ```$newchar warrior\n$newchar rogue\n$newchar wizard```')
 @dm.command()
 async def action(ctx, *args):
     a=str(ctx.message.author)
@@ -259,12 +298,7 @@ async def action(ctx, *args):
             if p.hp > p.hpmax:
                 p.hp=p.hpmax
             await ctx.send('Used **'+p.inv[item][0]+'!**')
-            #shift correction
-            if p.q_weap > item:
-                p.q_weap-=1
-            if p.q_ac > item:
-                p.q_ac-=1
-            p.inv.remove(p.inv[item])
+            p.remove_item(item)
             return
     if not p.battle:
         await ctx.send('You are not in combat!')
@@ -274,16 +308,19 @@ async def action(ctx, *args):
         p.turn-=1
         damage=0
         for i in range(p.attacks):
-            hit=dice(20, 1)+p.hit_bonus+p.hit_buff
-            if hit >= p.mon.ac:
-                h=dice(p.inv[p.q_weap][1], p.inv[p.q_weap][2])+p.dmg_bonus+p.dmg_buff
-                if h < 1:
-                    h=1
-                damage+=h
-                await ctx.send('You hit the **'+p.mon.name+'** for **'+str(h)+'** damage!')
+            if p.mon.hp <= 0:
+                break
             else:
-                await ctx.send('You **Missed!**')
-            p.mon.hp-=damage
+                hit=dice(20, 1)+p.hit_bonus+p.hit_buff
+                if hit >= p.mon.ac:
+                    h=dice(p.inv[p.q_weap][1], p.inv[p.q_weap][2])+p.dmg_bonus+p.dmg_buff
+                    if h < 1:
+                        h=1
+                    damage+=h
+                    await ctx.send('You hit the **'+p.mon.name+'** for **'+str(h)+'** damage!')
+                else:
+                    await ctx.send('You **Missed!**')
+                p.mon.hp-=damage
     #spells
     elif args[0] == 'cast':
         spell=int(args[1])
@@ -341,7 +378,7 @@ async def action(ctx, *args):
                     p.q_weap-=1
                 if p.q_ac > item:
                     p.q_ac-=1
-                p.inv.remove(p.inv[item])
+                p.remove_item(item)
             elif p.inv[item][3] == 3:
                 spell=all_spells[p.inv[item][1]][p.inv[item][2]]
                 if not spell[3] in p.buffs:
@@ -370,7 +407,7 @@ async def action(ctx, *args):
                         p.q_weap-=1
                     if p.q_ac > item:
                         p.q_ac-=1
-                    p.inv.remove(p.inv[item])
+                    p.remove_item(item)
                 else:
                     await ctx.send('**You already have a similar spell active!**')
     elif args[0] == 'flee':
@@ -446,8 +483,8 @@ async def spellbook(ctx):
     p=main.find_player(a)
     out='You do not have a character!'
     if p:
-        if not p.spells:
-            out='Your Intelligence is too low to learn spells, you must use scrolls instead!'
+        if p.pclass != pclass_index['wizard']:
+            out='You must be a Wizard to learn spells, you must use scrolls instead!'
         else:
             out='```Known Spells:\n'
             count=0
@@ -465,9 +502,6 @@ async def spellbook(ctx):
                 count+=1
             out+='\n'+str(p.spell_points)+' Spell Point(s) per encounter```'
     await ctx.send(out)
-
-#need to add !sell function
-
 @dm.command()
 async def buy(ctx, i):
     a=str(ctx.message.author)
@@ -482,7 +516,7 @@ async def buy(ctx, i):
                 await ctx.send('Not enough gold!')
                 return
             else:
-                p.inv.append(buy)
+                p.add_item(buy)
                 p.gold-=buy[4]
                 await ctx.send('Bought ***'+buy[0]+'***')
         except:
@@ -503,12 +537,7 @@ async def sell(ctx, i):
                     return
                 p.gold+=int(p.inv[i][4]/2)
                 await ctx.send('Sold **'+p.inv[i][0]+'!**')
-                #item shift correction
-                if p.q_weap > i:
-                    p.q_weap-=1
-                if p.q_ac > i:
-                    p.q_ac-=1
-                p.inv.remove(p.inv[i])
+                p.remove_item(i)
             else:
                 await ctx.send('***Invalid Item!***')
         else:
@@ -541,23 +570,24 @@ async def inv(ctx):
         i=0
         out='```Your Items:\n'
         for item in p.inv:
-            out+=str(i)+': '+item[0]
-            if item[3] == 0:
-                out+=' '+str(item[1])+' AC\n'
-            elif item[3] == 1:
-                out+=' '+str(item[2])+'d'+str(item[1])+' Damage\n'
-            elif item[3] == 2:
-                out+=' +'+str(item[1])+' Healing\n'
-            elif item[3] == 3:
-                spell=all_spells[item[1]][item[2]]
-                if spell[3] == 0:
-                    out+=' '+str(spell[2])+'d'+str(spell[1])+' Damage\n'
-                elif spell[3] == 1:
-                    out+=' +'+str(spell[2])+'d'+str(spell[1])+' AC\n'
-                elif spell[3] == 2:
-                    out+=' +'+str(spell[2])+'d'+str(spell[1])+' Weapon Damage\n'
-                elif spell[3] == 3:
-                    out+=' +'+str(spell[2])+'d'+str(spell[1])+' to Hit\n'
+            if item != None: 
+                out+=str(i)+': '+item[0]
+                if item[3] == 0:
+                    out+=' '+str(item[1])+' AC\n'
+                elif item[3] == 1:
+                    out+=' '+str(item[2])+'d'+str(item[1])+' Damage\n'
+                elif item[3] == 2:
+                    out+=' +'+str(item[1])+' Healing\n'
+                elif item[3] == 3:
+                    spell=all_spells[item[1]][item[2]]
+                    if spell[3] == 0:
+                        out+=' '+str(spell[2])+'d'+str(spell[1])+' Damage\n'
+                    elif spell[3] == 1:
+                        out+=' +'+str(spell[2])+'d'+str(spell[1])+' AC\n'
+                    elif spell[3] == 2:
+                        out+=' +'+str(spell[2])+'d'+str(spell[1])+' Weapon Damage\n'
+                    elif spell[3] == 3:
+                        out+=' +'+str(spell[2])+'d'+str(spell[1])+' to Hit\n'
             i+=1
         out+='Gold: '+str(p.gold)+'```'
     await ctx.send(out)
