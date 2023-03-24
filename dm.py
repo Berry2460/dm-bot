@@ -328,12 +328,12 @@ async def action(ctx, *args):
             await ctx.send('***Invalid Spell!***')
             return
         elif p.spells[spell]:
-            p.turn-=1
             cost=int(spell/3)+1
             if not p.sp >= cost:
                 await ctx.send('Not enough spell points!')
                 return
             if not p.spells[spell][3] in p.buffs:
+                p.turn-=1
                 p.sp-=cost
                 add=dice(p.spells[spell][1], p.spells[spell][2])
                 add+=p.spell_bonus
@@ -420,7 +420,7 @@ async def action(ctx, *args):
         else:
             p.turn-=1
             await ctx.send('**Failed attempt to flee!**')
-    else:
+    elif p.turn > 0:
         await ctx.send('**Please choose a valid action!**\n```\n$action attack\n$action cast [spell number]\n$action use [item number]\n$action flee```')
     #win
     if p.mon.hp < 1:
