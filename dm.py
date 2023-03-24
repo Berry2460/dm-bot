@@ -146,7 +146,7 @@ class Game:
                         out+='Found **'+item[0]+'!**'
             else:
                 self.battle=True
-                self.mon=self.Monster(int((self.lvl-1)/2), select)
+                self.mon=self.Monster(int((self.lvl-1)/2), dice(6, 1)-1)
                 out='Encountered **'+self.mon.name+'!**'
             return out
         def apply(self):
