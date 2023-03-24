@@ -6,7 +6,7 @@ import time
 import threading
 import asyncio
 
-token='NzE0NjQxMDc1ODU5NjE5OTE5.G8jPQN.ZIiP2kapayCpXe2PJsVB4MVQ40eaBHgIHAbiN0'
+token='TOKEN_HERE'
 alive=True
 
 #name, hp, ac, sides, times, hit bonus
