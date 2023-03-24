@@ -13,11 +13,11 @@ pclass_index={'warrior': 0, 'rogue': 1, 'wizard': 2}
 pclass_inverse_index={0: 'Warrior', 1: 'Rogue', 2: 'Wizard'}
 
 #name, hp, ac, sides, times, hit bonus
-monster_index=((('Goblin', 9, 10, 4, 1, 0), ('Grey Wolf', 8, 10, 4, 1, 1), ('Zombie', 12, 8, 6, 1, -1), ('Kobold', 7, 10, 4, 1, 0), ('Bandit', 8, 11, 6, 1, 1), ('Giant Spider', 5, 12, 4, 1, 2)), #lvl 1-2
-               (('Orc', 14, 11, 8, 1, 2), ('Ghoul', 16, 9, 8, 1, 1), ('Dancing Sword', 9, 14, 6, 1, 2), ('Harpy', 12, 13, 4, 2, 2), ('Dire Wolf', 13, 12, 4, 2, 2), ('Bugbear', 15, 11, 4, 2, 2)), #lvl 3-4
-               (('Werewolf', 26, 14, 6, 2, 3), ('Troll', 30, 15, 6, 2, 3), ('Wight', 22, 13, 6, 2, 2), ('Ghost', 18, 17, 6, 2, 2), ('Hill Giant', 33, 14, 12, 1, 2), ('Ogre', 25, 14, 6, 2, 3)), #lvl 5-6
-               (('Wyvern', 30, 17, 4, 4, 4), ('Young Dragon', 37, 17, 4, 3, 5), ('Water Elemental', 40, 16, 8, 2, 5), ('Stone Golem', 50, 12, 10, 2, 3), ('Minotaur', 36, 15, 8, 2, 4), ('Fire Giant', 36, 15, 8, 2, 4)), #lvl 7-8
-               (('Dragon', 65, 25, 8, 3, 7), ('Cloud Giant', 60, 21, 12, 2, 7), ('Fire Elemental', 50, 22, 6, 3, 6), ('Hydra', 58, 28, 6, 3, 7), ('Manticore', 50, 30, 20, 1, 7), ('Gorgon', 50, 21, 12, 3, 4))) #lvl 9-10
+monster_index=((('Goblin', 10, 10, 4, 1, 0), ('Grey Wolf', 9, 10, 4, 1, 1), ('Zombie', 14, 8, 6, 1, -1), ('Kobold', 8, 10, 4, 1, 0), ('Bandit', 9, 11, 6, 1, 1), ('Giant Spider', 7, 12, 4, 1, 2)), #lvl 1-2
+               (('Orc', 20, 12, 8, 1, 2), ('Ghoul', 25, 9, 8, 1, 1), ('Dancing Sword', 10, 15, 6, 1, 2), ('Harpy', 15, 13, 4, 2, 2), ('Dire Wolf', 17, 12, 4, 2, 2), ('Bugbear', 22, 11, 4, 2, 2)), #lvl 3-4
+               (('Werewolf', 36, 14, 6, 2, 3), ('Troll', 44, 15, 6, 2, 3), ('Wight', 32, 13, 6, 2, 2), ('Ghost', 28, 17, 6, 2, 2), ('Hill Giant', 40, 14, 12, 1, 2), ('Ogre', 35, 14, 6, 2, 3)), #lvl 5-6
+               (('Wyvern', 49, 17, 4, 5, 4), ('Young Dragon', 57, 17, 4, 4, 5), ('Water Elemental', 50, 16, 8, 2, 5), ('Stone Golem', 60, 19, 10, 2, 3), ('Minotaur', 56, 15, 8, 2, 4), ('Fire Giant', 63, 16, 8, 2, 4)), #lvl 7-8
+               (('Dragon', 85, 24, 8, 3, 7), ('Cloud Giant', 75, 21, 12, 2, 7), ('Fire Elemental', 55, 22, 6, 3, 6), ('Hydra', 58, 28, 6, 3, 7), ('Manticore', 50, 30, 20, 1, 7), ('Gorgon', 50, 21, 12, 3, 4))) #lvl 9-10
 
 #name, sides/ac/spell level, rolls/none/spell index, type 0=ac 1=weap 2=food 3=spell, price, mod
 shop_index=(('Quilted Armor', 11, None, 0, 75, 0),
@@ -106,7 +106,7 @@ class Game:
             self.spell_points=1 #spell points per encounter
             self.apply()
         def add_item(self, item):
-            if self.invCount < len(self.inv):
+            if self.invCount <= len(self.inv):
                 for i in range(len(self.inv)):
                     if not self.inv[i]:
                         self.inv[i]=item
@@ -515,10 +515,11 @@ async def buy(ctx, i):
             if p.gold < buy[4]:
                 await ctx.send('Not enough gold!')
                 return
-            else:
-                p.add_item(buy)
+            elif p.add_item(buy):
                 p.gold-=buy[4]
                 await ctx.send('Bought ***'+buy[0]+'***')
+            else:
+                await ctx.send('**Inventory is Full!**')
         except:
             await ctx.send('Invalid Item!')
     else:
