@@ -32,16 +32,25 @@ shop_index=(('Quilted Armor', 11, None, 0, 75, 0),
             ('Rations', 10, None, 2, 8, 0),
             ('Iron Rations', 20, None, 2, 18, 0))
 
-#name, die sides, time, type 0=dps 1=ac buff 2=dmg buff 3=hit buff
-all_spells=((('Magic Missile', 4, 2, 0), ('Shield', 4, 1, 1), ('Focus', 4, 1, 3), ('Weapon Enchantment', 4, 1, 2)),
-            (('Blur', 4, 2, 1), ('Fireball', 6, 3, 0), ('ESP', 4, 2, 3), ('Fiery Blade', 4, 2, 2)),
-            (('Invisibility', 4, 3, 1), ('Chain Lightning', 6, 5, 0), ('Ethereal Weapon', 6, 2, 2), ('Clairvoynace', 4, 3, 3)))
+#name, die sides, die count, type 0=dps 1=ac buff 2=dmg buff 3=hit buff
+all_spells=((('Magic Missile', 4, 3, 0), ('Shield', 4, 1, 1), ('Focus', 6, 1, 3), ('Weapon Enchantment', 6, 1, 2)),
+            (('Blur', 4, 2, 1), ('Fireball', 8, 3, 0), ('ESP', 4, 3, 3), ('Fiery Blade', 6, 2, 2)),
+            (('Invisibility', 4, 3, 1), ('Chain Lightning', 10, 4, 0), ('Ethereal Weapon', 6, 3, 2), ('Clairvoynace', 4, 5, 3)))
 
 def dice(side=6, times=1):
     total=0
     for x in range(times):
         total+=random.randrange(1, side)
     return total
+def load_spells():
+    loaded=[]
+    row=0
+    for spellRow in all_spells:
+        loaded.append([])
+        for spell in spellRow:
+            loaded[row].append(spell)
+        row+=1
+    return loaded
 class Game:
     def __init__(self):
         self.players={}
@@ -77,17 +86,15 @@ class Game:
             self.dex=dice(8, 2)+2
             self.vit=dice(8, 2)+2
             self.intel=dice(8, 2)+2
+            self.spellbook=[]
+            self.spells=[]
             if pclass == pclass_index['warrior']:
                 self.str=max(10, self.str)+2
             elif pclass == pclass_index['rogue']:
                 self.dex=max(10, self.dex)+2
             elif pclass == pclass_index['wizard']:
                 self.intel=max(10, self.intel)+2
-            self.spells=[]
-            self.spell_book=[[['Magic Missile', 4, 2, 0], ['Shield', 4, 1, 1], ['Focus', 4, 1, 3], ['Weapon Enchantment', 4, 1, 2]],
-                             [['Blur', 4, 2, 1], ['Fireball', 6, 3, 0], ['ESP', 4, 2, 3], ['Fiery Blade', 4, 2, 2]],
-                             [['Invisibility', 4, 3, 1], ['Chain Lightning', 6, 5, 0], ['Ethereal Weapon', 6, 2, 2], ['Clairvoynace', 4, 3, 3]]]
-            if self.pclass == pclass_index['wizard']:
+                self.spellbook=load_spells()
                 new=random.choice(self.spell_book[0])
                 self.spells.append(new)
                 self.spell_book[0].remove(new)
@@ -175,7 +182,7 @@ class Game:
                 new=random.choice(self.spell_book[int(self.lvl/4)])
                 self.spells.append(new)
                 self.spell_book[int(self.lvl/4)].remove(new)
-                self.spell_points=int(self.lvl/3)+1
+                self.spell_points=int(self.lvl/2.5)+1
             self.xp-=self.xpmax
             self.xpmax*=1.5
             self.xpmax=int(self.xpmax)
@@ -328,7 +335,7 @@ async def action(ctx, *args):
             await ctx.send('***Invalid Spell!***')
             return
         elif p.spells[spell]:
-            cost=int(spell/3)+1
+            cost=int(spell/4)+1
             if not p.sp >= cost:
                 await ctx.send('Not enough spell points!')
                 return
@@ -526,7 +533,6 @@ async def buy(ctx, i):
         await ctx.send('You do not have a character!')
 @dm.command()
 async def sell(ctx, i):
-    g=str(ctx.guild)
     a=str(ctx.message.author)
     p=main.find_player(a)
     i=int(i)
@@ -561,6 +567,13 @@ async def shop(ctx):
         out+=' '+str(item[4])+'g\n'
     out+='```'
     await ctx.send(out)
+
+@dm.command()
+async def fixallspells(ctx):
+    a=str(ctx.message.author)
+    p=main.find_player(a)
+    updateAllSpells(p)
+    await ctx.send('well, ok then...')
 
 @dm.command()
 async def inv(ctx):
