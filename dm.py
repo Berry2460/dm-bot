@@ -13,11 +13,11 @@ pclass_index={'warrior': 0, 'rogue': 1, 'wizard': 2}
 pclass_inverse_index={0: 'Warrior', 1: 'Rogue', 2: 'Wizard'}
 
 #name, hp, ac, sides, times, hit bonus
-monster_index=((('Goblin', 10, 10, 4, 1, 0), ('Grey Wolf', 9, 10, 4, 1, 1), ('Zombie', 14, 8, 6, 1, -1), ('Kobold', 8, 10, 4, 1, 0), ('Bandit', 9, 11, 6, 1, 1), ('Giant Spider', 7, 12, 4, 1, 2)), #lvl 1-2
-               (('Orc', 20, 12, 8, 1, 2), ('Ghoul', 25, 9, 8, 1, 1), ('Dancing Sword', 10, 15, 6, 1, 2), ('Harpy', 15, 13, 4, 2, 2), ('Dire Wolf', 17, 12, 4, 2, 2), ('Bugbear', 22, 11, 4, 2, 2)), #lvl 3-4
+monster_index=((('Goblin', 10, 10, 4, 1, 0), ('Grey Wolf', 9, 10, 4, 1, 1), ('Zombie', 15, 8, 6, 1, -1), ('Kobold', 8, 10, 4, 1, 0), ('Bandit', 9, 11, 6, 1, 1), ('Giant Spider', 7, 12, 4, 1, 2)), #lvl 1-2
+               (('Orc', 20, 12, 8, 1, 2), ('Ghoul', 25, 9, 8, 1, 1), ('Dancing Sword', 12, 15, 6, 1, 2), ('Harpy', 15, 13, 4, 2, 2), ('Dire Wolf', 17, 12, 4, 2, 2), ('Bugbear', 22, 11, 4, 2, 2)), #lvl 3-4
                (('Werewolf', 36, 14, 6, 2, 3), ('Troll', 44, 15, 6, 2, 3), ('Wight', 32, 13, 6, 2, 2), ('Ghost', 28, 17, 6, 2, 2), ('Hill Giant', 40, 14, 12, 1, 2), ('Ogre', 35, 14, 6, 2, 3)), #lvl 5-6
-               (('Wyvern', 49, 17, 4, 5, 4), ('Young Dragon', 57, 17, 4, 4, 5), ('Water Elemental', 50, 16, 8, 2, 5), ('Stone Golem', 60, 19, 10, 2, 3), ('Minotaur', 56, 15, 8, 2, 4), ('Fire Giant', 63, 16, 8, 2, 4)), #lvl 7-8
-               (('Dragon', 85, 24, 8, 3, 7), ('Cloud Giant', 75, 21, 12, 2, 7), ('Fire Elemental', 55, 22, 6, 3, 6), ('Hydra', 58, 28, 6, 3, 7), ('Manticore', 50, 30, 20, 1, 7), ('Gorgon', 50, 21, 12, 3, 4))) #lvl 9-10
+               (('Wyvern', 49, 17, 4, 5, 4), ('Young Dragon', 55, 17, 4, 4, 5), ('Water Elemental', 50, 16, 8, 2, 5), ('Stone Golem', 57, 19, 10, 2, 3), ('Minotaur', 47, 15, 8, 2, 4), ('Fire Giant', 53, 16, 8, 2, 4)), #lvl 7-8
+               (('Dragon', 65, 24, 8, 3, 7), ('Cloud Giant', 60, 21, 12, 2, 7), ('Fire Elemental', 55, 22, 6, 3, 6), ('Hydra', 56, 28, 6, 3, 7), ('Manticore', 49, 30, 20, 1, 7), ('Gorgon', 50, 21, 12, 3, 4))) #lvl 9-10
 
 #name, sides/ac/spell level, rolls/none/spell index, type 0=ac 1=weap 2=food 3=spell, price, mod
 shop_index=(('Quilted Armor', 11, None, 0, 75, 0),
@@ -34,8 +34,8 @@ shop_index=(('Quilted Armor', 11, None, 0, 75, 0),
 
 #name, die sides, die count, type 0=dps 1=ac buff 2=dmg buff 3=hit buff
 all_spells=((('Magic Missile', 4, 3, 0), ('Shield', 4, 1, 1), ('Focus', 6, 1, 3), ('Weapon Enchantment', 6, 1, 2)),
-            (('Blur', 4, 2, 1), ('Fireball', 8, 3, 0), ('ESP', 4, 3, 3), ('Fiery Blade', 6, 2, 2)),
-            (('Invisibility', 4, 3, 1), ('Chain Lightning', 10, 4, 0), ('Ethereal Weapon', 6, 3, 2), ('Clairvoynace', 4, 5, 3)))
+            (('Blur', 4, 2, 1), ('Fireball', 8, 4, 0), ('ESP', 4, 3, 3), ('Fiery Blade', 6, 2, 2)),
+            (('Invisibility', 4, 3, 1), ('Chain Lightning', 10, 5, 0), ('Ethereal Weapon', 6, 3, 2), ('Clairvoynace', 4, 5, 3)))
 
 def dice(side=6, times=1):
     total=0
@@ -264,8 +264,7 @@ async def equip(ctx, equip):
 @dm.command()
 async def newchar(ctx, pclass=None):
     a=str(ctx.message.author)
-    #test=main.find_player(a)
-    test=False
+    test=main.find_player(a)
     bad=False
     if test:
         await ctx.send('You already have a character!')
