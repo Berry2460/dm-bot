@@ -90,6 +90,7 @@ class Game:
             self.intel=dice(8, 2)+2
             self.spell_book=[]
             self.spells=[]
+            scroll_level=0
             if pclass == pclass_index['warrior']:
                 self.str=max(10, self.str)+2
             elif pclass == pclass_index['rogue']:
@@ -100,10 +101,10 @@ class Game:
                 new=(0, random.choice(self.spell_book[0]))
                 self.spells.append(new)
                 self.spell_book[0].remove(new[1])
-            else:
-                roll=dice(4, 1)-1
-                item=['Scroll of '+all_spells[int(self.lvl/4)][roll][0], int(self.lvl/4), roll, 3, int((self.lvl/4)+1)*55]
-                self.add_item(item)
+                scroll_level=1
+            roll=dice(4, 1)-1
+            item=['Scroll of '+all_spells[scroll_level][roll][0], scroll_level, roll, 3, (scroll_level+1)*55]
+            self.add_item(item)
             self.q_weap=0
             self.q_ac=1
             self.gold=dice(6, 4)*10
