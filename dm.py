@@ -167,7 +167,7 @@ class Game:
             self.buffs=[]
             self.dmg_bonus=int((self.str-10)/2)+self.inv[self.q_weap][5]
             self.hit_bonus=int((self.dex-10)/2)+int(self.lvl/3)+self.inv[self.q_weap][5]
-            self.ac=int(self.inv[self.q_ac][1]+(self.dex-10)/2)+self.inv[self.q_ac][5]
+            self.ac=self.inv[self.q_ac][1]+int((self.dex-10)/2)+self.inv[self.q_ac][5]
         def levelup(self):
             if self.lvl == 10:
                 self.xp=0
