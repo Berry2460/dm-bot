@@ -270,7 +270,7 @@ async def newchar(ctx, pclass=None):
         await ctx.send('You already have a character!')
         return
     else:
-        if True:
+        try:
             pclass=str(pclass)
             if pclass_index[pclass] >= 0 and pclass_index[pclass] < 3:
                 p=main.add_player(a, pclass_index[pclass])
@@ -279,7 +279,7 @@ async def newchar(ctx, pclass=None):
                 await ctx.send('Created your Character!\n'+out)
             else:
                 bad=True
-        else:
+        except:
             bad=True
     if bad:
         await ctx.send('**Invalid Class!**\nValid Classes are: ```$newchar warrior\n$newchar rogue\n$newchar wizard```')
