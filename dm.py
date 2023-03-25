@@ -50,7 +50,7 @@ def load_spells():
     row=0
     for spellRow in all_spells:
         loaded.append([])
-        for spell in spellRow:
+        for spell in range(len(spellRow)):
             loaded[row].append(spell)
         row+=1
     return loaded
@@ -88,7 +88,7 @@ class Game:
             self.dex=dice(8, 2)+2
             self.vit=dice(8, 2)+2
             self.intel=dice(8, 2)+2
-            self.spellbook=[]
+            self.spell_book=[]
             self.spells=[]
             if pclass == pclass_index['warrior']:
                 self.str=max(10, self.str)+2
@@ -96,10 +96,10 @@ class Game:
                 self.dex=max(10, self.dex)+2
             elif pclass == pclass_index['wizard']:
                 self.intel=max(10, self.intel)+2
-                self.spellbook=load_spells()
-                new=random.choice(self.spell_book[0])
+                self.spell_book=load_spells()
+                new=(0, random.choice(self.spell_book[0]))
                 self.spells.append(new)
-                self.spell_book[0].remove(new)
+                self.spell_book[0].remove(new[1])
             else:
                 roll=dice(4, 1)-1
                 item=['Scroll of '+all_spells[int(self.lvl/4)][roll][0], int(self.lvl/4), roll, 3, int((self.lvl/4)+1)*55]
@@ -178,9 +178,9 @@ class Game:
                 self.turns=int(self.lvl/4)+1
             if self.pclass == pclass_index['wizard']: #magic proficent
                 self.spell_bonus=int((self.intel-10)/2)+int(self.lvl/3)
-                new=random.choice(self.spell_book[int(self.lvl/4)])
+                new=(int(self.lvl/4), random.choice(self.spell_book[int(self.lvl/4)]))
                 self.spells.append(new)
-                self.spell_book[int(self.lvl/4)].remove(new)
+                self.spell_book[new[0]].remove(new[1])
                 self.spell_points=int(self.lvl/2.5)+1
             self.xp-=self.xpmax
             self.xpmax*=1.5
@@ -269,7 +269,7 @@ async def newchar(ctx, pclass=None):
         await ctx.send('You already have a character!')
         return
     else:
-        try:
+        if True:
             pclass=str(pclass)
             if pclass_index[pclass] >= 0 and pclass_index[pclass] < 3:
                 p=main.add_player(a, pclass_index[pclass])
@@ -278,7 +278,7 @@ async def newchar(ctx, pclass=None):
                 await ctx.send('Created your Character!\n'+out)
             else:
                 bad=True
-        except:
+        else:
             bad=True
     if bad:
         await ctx.send('**Invalid Class!**\nValid Classes are: ```$newchar warrior\n$newchar rogue\n$newchar wizard```')
@@ -333,30 +333,31 @@ async def action(ctx, *args):
             await ctx.send('***Invalid Spell!***')
             return
         elif p.spells[spell]:
+            spell_obj=all_spells[p.spells[spell][0]][p.spells[spell][1]]
             cost=int(spell/4)+1
             if not p.sp >= cost:
                 await ctx.send('Not enough spell points!')
                 return
-            if not p.spells[spell][3] in p.buffs:
+            if not spell_obj[3] in p.buffs:
                 p.turn-=1
                 p.sp-=cost
-                add=dice(p.spells[spell][1], p.spells[spell][2])
+                add=dice(spell_obj[1], spell_obj[2])
                 add+=p.spell_bonus
                 if add < 1:
                     add=1
-                if p.spells[spell][3] != 0:
-                    p.buffs.append(p.spells[spell][3])
-                out='You Cast **'+p.spells[spell][0]+'!**\n'
-                if p.spells[spell][3] == 0: #dps
+                if spell_obj[3] != 0:
+                    p.buffs.append(spell_obj[3])
+                out='You Cast **'+spell_obj[0]+'!**\n'
+                if spell_obj[3] == 0: #dps
                     p.mon.hp-=add
                     out+='Hit the **'+p.mon.name+'** for **'+str(add)+'** damage!'
-                elif p.spells[spell][3] == 1: #ac
+                elif spell_obj[3] == 1: #ac
                     p.ac+=add
                     out+='**+'+str(add)+' AC**'
-                elif p.spells[spell][3] == 2: #dmg
+                elif spell_obj[3] == 2: #dmg
                     p.dmg_bonus+=add
                     out+='**+'+str(add)+' Damage**'
-                elif p.spells[spell][3] == 3: #hit
+                elif spell_obj[3] == 3: #hit
                     p.hit_bonus+=add
                     out+='**+'+str(add)+' to Hit**'
                 await ctx.send(out)
@@ -492,19 +493,18 @@ async def spellbook(ctx):
             out='You must be a Wizard to learn spells, you must use scrolls instead!'
         else:
             out='```Known Spells:\n'
-            count=0
-            for spell in p.spells:
-                out+=str(count)+': '
-                if spell[3] == 0:
-                    out+=spell[0]+' '+str(spell[2])+'d'+str(spell[1])+' Damage'
-                elif spell[3] == 1:
-                    out+=spell[0]+' +'+str(spell[2])+'d'+str(spell[1])+' AC'
-                elif spell[3] == 2:
-                    out+=spell[0]+' +'+str(spell[2])+'d'+str(spell[1])+' Weapon Damage'
-                elif spell[3] == 3:
-                    out+=spell[0]+' +'+str(spell[2])+'d'+str(spell[1])+' to Hit'
-                out+=' SP: '+str(int(count/3+1))+'\n'
-                count+=1
+            for spell in range(len(p.spells)):
+                spell_obj=all_spells[p.spells[spell][0]][p.spells[spell][1]]
+                out+=str(spell)+': '
+                if spell_obj[3] == 0:
+                    out+=spell_obj[0]+' '+str(spell_obj[2])+'d'+str(spell_obj[1])+' Damage'
+                elif spell_obj[3] == 1:
+                    out+=spell_obj[0]+' +'+str(spell_obj[2])+'d'+str(spell_obj[1])+' AC'
+                elif spell_obj[3] == 2:
+                    out+=spell_obj[0]+' +'+str(spell_obj[2])+'d'+str(spell_obj[1])+' Weapon Damage'
+                elif spell_obj[3] == 3:
+                    out+=spell_obj[0]+' +'+str(spell_obj[2])+'d'+str(spell_obj[1])+' to Hit'
+                out+=' SP: '+str(int(spell/3+1))+'\n'
             out+='\n'+str(p.spell_points)+' Spell Point(s) per encounter```'
     await ctx.send(out)
 @dm.command()
