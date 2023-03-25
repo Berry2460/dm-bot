@@ -77,7 +77,6 @@ class Game:
             self.mon=None
             self.battle=False
             self.inv=[['Short Sword', 6, 1, 1, 50, 0], ['Cloth', 10, None, 0, 20, 0], None, None, None, None, None, None, None, None]
-            self.invCount=2
             self.name=name
             self.xp=0
             self.xpmax=40
@@ -113,14 +112,11 @@ class Game:
             self.spell_points=1 #spell points per encounter
             self.apply()
         def add_item(self, item):
-            if self.invCount <= len(self.inv):
-                for i in range(len(self.inv)):
-                    if not self.inv[i]:
-                        self.inv[i]=item
-                        self.invCount+=1
-                        return True
-            else:
-                return False
+            for i in range(len(self.inv)):
+                if not self.inv[i]:
+                    self.inv[i]=item
+                    return True
+            return False
         def remove_item(self, index):
             if index < len(self.inv) and index >= 0 and self.inv[index] != None:
                 self.inv[index]=None
