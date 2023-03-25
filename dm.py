@@ -25,10 +25,13 @@ shop_index=(('Quilted Armor', 11, None, 0, 75, 0),
             ('Splint Mail', 13, None, 0, 200, 0),
             ('Chain Mail', 14, None, 0, 300, 0),
             ('Plate Mail', 15, None, 0, 400, 0),
+            ('Full Plate Mail', 16, None, 0, 600, 0),
             ('Long Sword', 8, 1, 1, 100, 0),
             ('Axe', 10, 1, 1, 175, 0),
             ('Halberd', 12, 1, 1, 225, 0),
             ('Two-Handed Sword', 8, 2, 1, 375, 0),
+            ('Great Maul', 10, 2, 1, 550, 0),
+            ('Great Axe', 12, 2, 1, 700, 0),
             ('Rations', 10, None, 2, 8, 0),
             ('Iron Rations', 20, None, 2, 18, 0))
 
@@ -519,9 +522,9 @@ async def buy(ctx, i):
                 return
             elif p.add_item(buy):
                 p.gold-=buy[4]
-                await ctx.send('Bought ***'+buy[0]+'***')
+                await ctx.send('Bought ***'+buy[0]+'***\nYou have **'+str(p.gold)+'** Gold left!')
             else:
-                await ctx.send('**Inventory is Full!**')
+                await ctx.send('**Inventory is full!**')
         except:
             await ctx.send('Invalid Item!')
     else:
@@ -537,11 +540,12 @@ async def sell(ctx, i):
                 if i == p.q_weap or i == p.q_ac:
                     await ctx.send('Cannot sell equipped item!')
                     return
-                p.gold+=int(p.inv[i][4]/2)
-                await ctx.send('Sold **'+p.inv[i][0]+'!**')
+                amount=int(p.inv[i][4]/2)*(1+p.inv[i][5])
+                p.gold+=amount
+                await ctx.send('Sold **'+p.inv[i][0]+' for **'+str(amount)+'** Gold!**')
                 p.remove_item(i)
             else:
-                await ctx.send('***Invalid Item!***')
+                await ctx.send('***Invalid item!***')
         else:
             await ctx.send('You are in combat!')
     else:
