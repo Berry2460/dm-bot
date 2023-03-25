@@ -224,7 +224,7 @@ async def show_stats(p):
         out+='\'s Character:\nLevel: '+str(p.lvl)
         out+='\nClass: '+pclass_inverse_index[p.pclass]
         out+='\nLife: '+str(p.hp)+'/'+str(p.hpmax)
-        out+='\nArmor: '+p.inv[p.q_ac][0]+' +'+str(p.ac)
+        out+='\nArmor: '+p.inv[p.q_ac][0]+' '+str(p.ac)+' AC'
         out+='\nAttack: '+p.inv[p.q_weap][0]+' '+str(p.inv[p.q_weap][2])+'d'+str(p.inv[p.q_weap][1])+dmg_bonus+' '+hit_bonus+' To Hit x'+str(p.attacks)+atk
         out+='\nExperience: '+str(p.xp)+'/'+str(p.xpmax)
         out+='\nStrength: '+str(p.str)+'\nDexterity: '+str(p.dex)+'\nVitality: '+str(p.vit)
