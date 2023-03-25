@@ -142,7 +142,7 @@ class Game:
                         roll=dice(4, 1)-1
                         item=['Scroll of '+all_spells[int(self.lvl/4)][roll][0], int(self.lvl/4), roll, 3, int((self.lvl/4)+1)*55]
                     else:
-                        roll=dice(9, 1)-1
+                        roll=dice(12, 1)-1
                         item=[*shop_index[roll]]
                         mod=random.choice([1, 1, 1, 1, 2, 2, 3])
                         item[5]=mod
